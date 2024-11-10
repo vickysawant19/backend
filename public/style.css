@@ -48,8 +48,8 @@ body {
     margin: 2px;
     cursor: pointer;
     border-radius: 5px;
-    aspect-ratio: 1;
     width: auto;
+    aspect-ratio: 1;
 }
 
 .number-btn:hover {
@@ -191,7 +191,8 @@ body {
     .number-btn {
         padding: 15px;
         font-size: 2rem;
-        margin: 2px;
+        margin: 1.2px;
+       
     }
 
     .player {
