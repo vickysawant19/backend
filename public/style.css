@@ -13,6 +13,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding-top: 20px;
 }
 
 .game-container {
@@ -25,15 +26,14 @@ body {
 }
 
 .game-box {
-   
     display: grid;
     grid-template-columns: repeat(5, 1fr); 
     gap: 5px;
-    width: 80%; 
+    width: 85%; 
     max-width: 400px;
     margin: 30px auto; 
     background-color: #212121;
-    padding: 10px;
+    padding: 5px;
     border-radius: 5px;
 }
 
@@ -50,6 +50,7 @@ body {
     border-radius: 5px;
     width: auto;
     aspect-ratio: 1;
+    transition: all .3s ease;
 }
 
 .number-btn:hover {
