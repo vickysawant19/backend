@@ -127,7 +127,7 @@ const showArr = (numArr) => {
       });
     }
     btn.disabled = !currentGame?.currentPlayer.id === playerData.id;
-    btn.style.backgroundColor = item.isSelected ? "red" : "green";
+    btn.style.backgroundColor = item.isSelected ? "#D7003A" : "#0A9D58";
     gameBox.appendChild(btn);
   });
 };
