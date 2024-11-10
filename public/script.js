@@ -141,17 +141,6 @@ const startNewGame = () => {
   checkPossibles(numberArr);
 };
 
-const start = () => {
-  playerBox.classList.add("hidden");
-  playerData = {
-    //   id: 0,
-    name: playerName.value || "vicky",
-    score: 0,
-  };
-  socket.emit("player-name", playerData);
-};
-
-// start();
 startBtn.addEventListener("click", () => {
   if (playerName.value !== "") {
     playerBox.classList.add("hidden");
@@ -160,7 +149,8 @@ startBtn.addEventListener("click", () => {
       name: playerName.value || "vicky",
       score: 0,
     };
-    socket.emit("player-name", playerData);
+    // socket.emit("player-name", playerData);
+    socket.emit("start-new-game", playerData);
   }
 });
 
@@ -204,6 +194,7 @@ socket.on("game-start", (data) => {
 });
 
 socket.on("message", (data) => {
+  console.log(data);
   let messageBox = document.querySelector(".message-box");
   messageBox.classList.remove("hidden");
   messageBox.textContent = data;
