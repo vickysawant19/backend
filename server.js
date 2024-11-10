@@ -32,6 +32,10 @@ io.on("connection", (socket) => {
   socket.on("player-name", (playerData) => {
     console.log("New Player:", playerData);
 
+    playerData = { ...playerData, id: socket.id };
+
+    socket.emit("player-data", playerData);
+
     // Check if there's a player already waiting
     if (waitingPlayer) {
       // Pair the new player with the waiting player
@@ -61,11 +65,22 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Handle the winner event and leave the room
   socket.on("winner", (currentGame) => {
     const rooms = Array.from(socket.rooms).filter((room) => room !== socket.id); // Get player's rooms
 
     rooms.forEach((room) => {
+      // Broadcast winner to room and then disconnect both players from the room
       io.to(room).emit("winner", currentGame);
+
+      // Remove both players from the room
+      socket.leave(room);
+      const otherPlayerSocket = io.sockets.adapter.rooms.get(room); // Get other player
+      if (otherPlayerSocket) {
+        otherPlayerSocket.forEach((playerId) =>
+          io.sockets.sockets.get(playerId).leave(room)
+        );
+      }
     });
   });
 

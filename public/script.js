@@ -1,4 +1,5 @@
 const socket = io("https://bingo-vs.up.railway.app");
+// const socket = io("http://localhost:3000");
 
 socket.on("connect", () => {
   console.log("Connected to server");
@@ -35,19 +36,19 @@ let startBtn = document.querySelector(".start-btn");
 let currentPlay = document.querySelector(".current-play");
 
 const showStat = () => {
-  let isPlayer1 = currentGame.player1.name === playerData.name;
+  let isPlayer1 = currentGame.player1.id === playerData.id;
   if (isPlayer1) {
     player.textContent =
-      currentGame.currentPlayer.name === playerData.name
+      currentGame.currentPlayer.id === playerData.id
         ? "Your turn"
         : `${currentGame.player2.name} turn!`;
   } else {
     player.textContent =
-      currentGame.currentPlayer.name === playerData.name
+      currentGame.currentPlayer.id === playerData.id
         ? "Your turn"
         : `${currentGame.player1.name} turn!`;
   }
-  let myTurn = currentGame.currentPlayer.name === playerData.name;
+  let myTurn = currentGame.currentPlayer.id === playerData.id;
   if (myTurn) {
     player.classList.add("animate");
   } else {
@@ -88,7 +89,7 @@ const checkPossibles = (arr) => {
   let result = bingoPairs.filter((item) =>
     item.every((x) => arr.some((inn) => inn.id === x && inn.isSelected))
   );
-  currentGame.player1.name === playerData.name
+  currentGame.player1.id === playerData.id
     ? (currentGame.player1.score = result.length)
     : (currentGame.player2.score = result.length);
 
@@ -110,10 +111,10 @@ const showArr = (numArr) => {
     btn.textContent = item.value;
     btn.classList.add("number-btn");
     btn.style.cursor = "auto";
-    if (currentGame?.currentPlayer.name === playerData.name && !isGameEnd) {
+    if (currentGame?.currentPlayer.id === playerData.id && !isGameEnd) {
       btn.style.cursor = "pointer";
       btn.addEventListener("click", () => {
-        currentGame.player1.name === currentGame.currentPlayer.name
+        currentGame.player1.id === currentGame.currentPlayer.id
           ? (currentGame.currentPlayer = currentGame.player2)
           : (currentGame.currentPlayer = currentGame.player1);
 
@@ -125,7 +126,7 @@ const showArr = (numArr) => {
         socket.emit("update", item.value, currentGame);
       });
     }
-    btn.disabled = !currentGame?.currentPlayer.name === playerData.name;
+    btn.disabled = !currentGame?.currentPlayer.id === playerData.id;
     btn.style.backgroundColor = item.isSelected ? "red" : "green";
     gameBox.appendChild(btn);
   });
@@ -144,11 +145,16 @@ startBtn.addEventListener("click", () => {
   if (playerName.value !== "") {
     playerBox.classList.add("hidden");
     playerData = {
+      //   id: 0,
       name: playerName.value,
       score: 0,
     };
     socket.emit("player-name", playerData);
   }
+});
+
+socket.on("player-data", (data) => {
+  playerData = data;
 });
 
 socket.on("winner", (gameData) => {
@@ -169,7 +175,11 @@ socket.on("winner", (gameData) => {
     socket.emit("start-new-game", { ...playerData, score: 0 });
   });
   let p = document.createElement("p");
-  p.innerText = `${winnerData.name} won the Game!`;
+  if (winnerData.id === playerData.id) {
+    p.innerText = `You won the Game!`;
+  } else {
+    p.innerText = `${winnerData.name} won the Game!`;
+  }
   player.append(p, newGame);
 });
 

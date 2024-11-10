@@ -13,7 +13,6 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 20px;
 }
 
 .game-container {
@@ -23,20 +22,37 @@ body {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    padding: 20px;
+  
 }
 
 .game-box {
+   
     display: grid;
     grid-template-columns: repeat(5, 1fr); 
     gap: 5px;
-    width: fit-content;
-    margin: 30px;
+    width: 80%; 
+    max-width: 400px;
+    margin: 30px auto; 
 }
 
-.game-box button {
+.number-btn {
+    padding: 20px;
+    color: white;
+    font-size: 1rem;
+    outline: none;
+    border: none;
+    margin: 2px;
+    cursor: pointer;
     border-radius: 5px;
+    aspect-ratio: 1;
+    width: auto;
 }
+
+.number-btn:hover {
+    opacity: 90%;
+}
+
+
 
 .player-box {
     color: white;
@@ -137,20 +153,7 @@ body {
     }
 }
 
-.number-btn {
-    padding: 20px;
-    color: white;
-    font-size: 1rem;
-    outline: none;
-    border: none;
-    margin: 2px;
-    cursor: pointer;
-  
-}
 
-.number-btn:hover {
-    opacity: 90%;
-}
 
 /* Mobile Screen (up to 768px) */
 
