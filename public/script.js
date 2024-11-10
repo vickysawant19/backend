@@ -1,5 +1,5 @@
-const socket = io("https://bingo-vs.up.railway.app");
-// const socket = io("http://localhost:3000");
+// const socket = io("https://bingo-vs.up.railway.app");
+const socket = io("http://localhost:3000");
 
 socket.on("connect", () => {
   console.log("Connected to server");
@@ -127,7 +127,9 @@ const showArr = (numArr) => {
       });
     }
     btn.disabled = !currentGame?.currentPlayer.id === playerData.id;
-    btn.style.backgroundColor = item.isSelected ? "red" : "green";
+
+    // btn.style.backgroundColor = item.isSelected ? "red" : "green";
+    btn.style.color = item.isSelected ? "red" : "green";
     gameBox.appendChild(btn);
   });
 };
@@ -141,16 +143,27 @@ const startNewGame = () => {
   checkPossibles(numberArr);
 };
 
+const start = () => {
+  playerBox.classList.add("hidden");
+  playerData = {
+    //   id: 0,
+    name: playerName.value || "vicky",
+    score: 0,
+  };
+  socket.emit("player-name", playerData);
+};
+
+start();
 startBtn.addEventListener("click", () => {
-  if (playerName.value !== "") {
-    playerBox.classList.add("hidden");
-    playerData = {
-      //   id: 0,
-      name: playerName.value,
-      score: 0,
-    };
-    socket.emit("player-name", playerData);
-  }
+  //   if (playerName.value !== "") {
+  playerBox.classList.add("hidden");
+  playerData = {
+    //   id: 0,
+    name: playerName.value || "vicky",
+    score: 0,
+  };
+  socket.emit("player-name", playerData);
+  //   }
 });
 
 socket.on("player-data", (data) => {
