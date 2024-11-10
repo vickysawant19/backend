@@ -153,17 +153,17 @@ const start = () => {
   socket.emit("player-name", playerData);
 };
 
-start();
+// start();
 startBtn.addEventListener("click", () => {
-  //   if (playerName.value !== "") {
-  playerBox.classList.add("hidden");
-  playerData = {
-    //   id: 0,
-    name: playerName.value || "vicky",
-    score: 0,
-  };
-  socket.emit("player-name", playerData);
-  //   }
+  if (playerName.value !== "") {
+    playerBox.classList.add("hidden");
+    playerData = {
+      //   id: 0,
+      name: playerName.value || "vicky",
+      score: 0,
+    };
+    socket.emit("player-name", playerData);
+  }
 });
 
 socket.on("player-data", (data) => {
