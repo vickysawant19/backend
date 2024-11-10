@@ -41,7 +41,7 @@ body {
     color: white;
     font-weight: bold;
     background-color: whitesmoke; 
-    padding: 6px;
+    padding: 10px;
     font-size: 2rem;
     outline: none;
     border: none;
@@ -189,10 +189,9 @@ body {
     }
 
     .number-btn {
-        padding: 15px;
-        font-size: 2rem;
+        padding: 6px;
+        font-size: 1.8rem;
         margin: 1.2px;
-       
     }
 
     .player {
