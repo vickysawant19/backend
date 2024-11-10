@@ -22,6 +22,7 @@ const bingoPairs = [
 let numberArr = [];
 let playerData = {};
 let currentGame = {};
+let isGameEnd = false;
 
 let gameContainer = document.querySelector(".game-container");
 let gameBox = document.querySelector(".game-box");
@@ -46,20 +47,28 @@ const showStat = () => {
         ? "Your turn"
         : `${currentGame.player1.name} turn!`;
   }
+  let myTurn = currentGame.currentPlayer.name === playerData.name;
+  if (myTurn) {
+    player.classList.add("animate");
+  } else {
+    player.classList.remove("animate");
+  }
 
   currentPlay.innerHTML = "";
   let player1 = document.createElement("div");
   let player2 = document.createElement("div");
   player1.innerHTML = `<ul>
-   <p>Player 1: </p>
-   <li>${currentGame.player1.name}</li>
-   <li>${currentGame.player1.score}</li>
-   </ul>`;
+  <p style="padding-bottom: 10px;">Player 1:</p>
+  <li style="font-size: 1rem;">${currentGame.player1.name}</li>
+  <li style="font-size: 1.8rem;">${currentGame.player1.score}</li>
+</ul>`;
+
   player2.innerHTML = `<ul>
-   <p>Player 2: <p>
-   <li>${currentGame.player2.name}</li>
-   <li>${currentGame.player2.score}</li>
-   </ul>`;
+  <p style="padding-bottom: 10px;">Player 2:</p> <!-- Corrected closing tag -->
+  <li style="font-size: 1rem;">${currentGame.player2.name}</li>
+  <li style="font-size: 1.8rem;">${currentGame.player2.score}</li>
+</ul>`;
+
   currentPlay.append(player1, player2);
 };
 
@@ -85,6 +94,7 @@ const checkPossibles = (arr) => {
 
   showStat();
   if (result.length >= 5) {
+    isGameEnd = true;
     socket.emit("winner", currentGame);
   }
 };
@@ -98,8 +108,10 @@ const showArr = (numArr) => {
   numArr.forEach((item, index) => {
     let btn = document.createElement("button");
     btn.textContent = item.value;
-
-    if (currentGame?.currentPlayer.name === playerData.name) {
+    btn.classList.add("number-btn");
+    btn.style.cursor = "auto";
+    if (currentGame?.currentPlayer.name === playerData.name && !isGameEnd) {
+      btn.style.cursor = "pointer";
       btn.addEventListener("click", () => {
         currentGame.player1.name === currentGame.currentPlayer.name
           ? (currentGame.currentPlayer = currentGame.player2)
@@ -114,15 +126,13 @@ const showArr = (numArr) => {
       });
     }
     btn.disabled = !currentGame?.currentPlayer.name === playerData.name;
-    btn.style.color = "white";
-    btn.style.width = "50px";
-    btn.style.height = "50px";
     btn.style.backgroundColor = item.isSelected ? "red" : "green";
     gameBox.appendChild(btn);
   });
 };
 
 const startNewGame = () => {
+  isGameEnd = false;
   clearBoard();
   numberArr = createNewArr();
   showArr(numberArr);
@@ -142,6 +152,11 @@ startBtn.addEventListener("click", () => {
 });
 
 socket.on("winner", (gameData) => {
+  currentGame = gameData;
+  isGameEnd = true;
+  showArr(numberArr);
+  showStat();
+  player.classList.remove("animate");
   player.innerHTML = "";
   let winnerData =
     gameData.player1.score >= 5 ? gameData.player1 : gameData.player2;
@@ -159,6 +174,7 @@ socket.on("winner", (gameData) => {
 });
 
 socket.on("game-start", (data) => {
+  isGameEnd = false;
   currentGame = data;
   let messageBox = document.querySelector(".message-box");
   messageBox.classList.add("hidden");
@@ -177,8 +193,8 @@ socket.on("update", (num, game) => {
     x.value === num ? { ...x, isSelected: true } : { ...x }
   );
   currentGame = game;
-  showArr(numberArr);
   checkPossibles(numberArr);
+  showArr(numberArr);
 });
 
 socket.on("disconnect", () => {
