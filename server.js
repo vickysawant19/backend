@@ -53,7 +53,8 @@ io.on("connection", (socket) => {
         player1: waitingPlayer.playerData,
         player2: playerData,
         room: roomName,
-        currentPlayer: playerData,
+        currentPlayer:
+          Math.random() > 0.5 ? playerData : waitingPlayer.playerData,
       });
 
       // Clear waiting player
