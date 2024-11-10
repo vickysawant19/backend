@@ -1,4 +1,4 @@
-const socket = io("http://localhost:3000");
+const socket = io("https://bingo-vs.up.railway.app");
 
 socket.on("connect", () => {
   console.log("Connected to server");
