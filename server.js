@@ -38,19 +38,16 @@ io.on("connection", (socket) => {
       const roomName = `room-${waitingPlayer.id}-${socket.id}`;
       socket.join(roomName);
       waitingPlayer.socket.join(roomName);
-
       io.to(roomName).emit("message", `You are paired! Room: ${roomName}`);
       io.to(roomName).emit(
         "message",
         `${waitingPlayer.playerData.name} with ${playerData.name}`
       );
-
       // Store room and player details in activeRooms
       activeRooms[roomName] = {
         player1: waitingPlayer,
         player2: { id: socket.id, playerData, socket },
       };
-
       setTimeout(() => {
         io.to(roomName).emit("game-start", {
           player1: waitingPlayer.playerData,
@@ -58,7 +55,6 @@ io.on("connection", (socket) => {
           room: roomName,
           currentPlayer: playerData,
         });
-
         waitingPlayer = null; // Clear waiting player
       }, 2000);
     } else {
@@ -68,26 +64,20 @@ io.on("connection", (socket) => {
   });
 
   socket.on("update", (num, game) => {
-    const rooms = Array.from(socket.rooms).filter((room) => room !== socket.id);
-    rooms.forEach((room) => {
-      io.to(room).emit("update", num, game);
-    });
+    io.to(game.room).emit("update", num, game);
   });
 
   socket.on("winner", (currentGame) => {
-    const rooms = Array.from(socket.rooms).filter((room) => room !== socket.id);
-    rooms.forEach((room) => {
-      io.to(room).emit("winner", currentGame);
-      socket.leave(room);
+    let room = currentGame.room;
+    io.to(room).emit("winner", currentGame);
+    socket.leave(room);
 
-      // Remove both players from the room in activeRooms
-      if (activeRooms[room]) {
-        const { player1, player2 } = activeRooms[room];
-        player1.socket.leave(room);
-        player2.socket.leave(room);
-        delete activeRooms[room];
-      }
-    });
+    if (activeRooms[room]) {
+      const { player1, player2 } = activeRooms[room];
+      player1.socket.leave(room);
+      player2.socket.leave(room);
+      delete activeRooms[room];
+    }
   });
 
   // Handle player disconnection
