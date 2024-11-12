@@ -23,96 +23,123 @@ app.get("*", (req, res) => {
   return res.sendFile(path.join(_dirname, "/views/404.html"));
 });
 
-let waitingPlayer = null; // Waiting player store
-const activeRooms = {}; // Custom room tracking for active games
+let players = [];
 
 io.on("connection", (socket) => {
   console.log(socket.id + " is connected!");
-
   socket.on("start-new-game", (playerData) => {
-    console.log("New Player:", playerData);
-    playerData = { ...playerData, id: socket.id };
+    playerData = {
+      ...playerData,
+      id: socket.id,
+      isWaiting: false,
+      room: null,
+    };
     socket.emit("player-data", playerData);
+    let alredyPresent = players.find((item) => item.id === socket.id);
+    if (!alredyPresent) {
+      players.push(playerData);
+    }
 
-    if (waitingPlayer) {
-      const roomName = `room-${waitingPlayer.id}-${socket.id}`;
+    let waitingPlayerData = players.find(
+      (player) => player.id !== socket.id && player.isWaiting
+    );
+
+    if (waitingPlayerData) {
+      const roomName = `room-${waitingPlayerData.id}-${socket.id}`;
       socket.join(roomName);
-      waitingPlayer.socket.join(roomName);
-      io.to(roomName).emit("message", `You are paired! Room: ${roomName}`);
+      io.sockets.sockets.get(waitingPlayerData.id).join(roomName);
+      players = players.map((player) =>
+        player.id === socket.id || player.id === waitingPlayerData.id
+          ? { ...player, isWaiting: false, room: roomName }
+          : player
+      );
+
       io.to(roomName).emit(
         "message",
-        `${waitingPlayer.playerData.name} with ${playerData.name}`
+        `${waitingPlayerData.name} with ${playerData.name}`
       );
-      // Store room and player details in activeRooms
-      activeRooms[roomName] = {
-        player1: waitingPlayer,
-        player2: { id: socket.id, playerData, socket },
-      };
+
       setTimeout(() => {
         io.to(roomName).emit("game-start", {
-          player1: waitingPlayer.playerData,
+          player1: waitingPlayerData,
           player2: playerData,
           room: roomName,
           currentPlayer: playerData,
         });
-        waitingPlayer = null; // Clear waiting player
       }, 2000);
     } else {
-      waitingPlayer = { id: socket.id, playerData, socket };
+      players = players.map((player) =>
+        player.id === socket.id ? { ...player, isWaiting: true } : player
+      );
+
       socket.emit("message", "Waiting for another player...");
     }
+  });
+
+  socket.on("show-all-players", () => {
+    socket.emit("show-all-players", players);
   });
 
   socket.on("update", (num, game) => {
     io.to(game.room).emit("update", num, game);
   });
 
+  socket.on("update-other-player", (number, game, data) => {
+    io.to(data.id).emit("update-board", number, game);
+  });
+
+  socket.on("update-game-data", (data) => {
+    io.to(data.room).emit("update-game-data", data);
+  });
+
   socket.on("winner", (currentGame) => {
     let room = currentGame.room;
     io.to(room).emit("winner", currentGame);
     socket.leave(room);
-
-    if (activeRooms[room]) {
-      const { player1, player2 } = activeRooms[room];
-      player1.socket.leave(room);
-      player2.socket.leave(room);
-      delete activeRooms[room];
+    let otherPlayer = players.find(
+      (player) => player.room === room && player.id !== socket.id
+    );
+    console.log("otherPlayer", otherPlayer);
+    if (otherPlayer) {
+      io.sockets.sockets.get(otherPlayer.id).leave(room);
     }
+    //update players room
+    players = players.map((player) =>
+      player.room === room ? { ...player, room: null } : player
+    );
   });
 
   // Handle player disconnection
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
+    let playerInfo = players.find((player) => player.id === socket.id);
+    if (playerInfo?.room) {
+      let otherPlayer = players.find(
+        (player) => player.id !== socket.id && player.room === playerInfo.room
+      );
 
-    if (waitingPlayer && waitingPlayer.id === socket.id) {
-      waitingPlayer = null;
-    } else {
-      // Find the room where the disconnected player was in
-      for (const roomName in activeRooms) {
-        const { player1, player2 } = activeRooms[roomName];
-        if (player1.id === socket.id || player2.id === socket.id) {
-          const otherPlayer = player1.id === socket.id ? player2 : player1;
-
-          // Notify and remove the other player from the room
-          otherPlayer.socket.leave(roomName);
-          otherPlayer.socket.emit(
+      if (otherPlayer && otherPlayer.id) {
+        players = players.map((play) =>
+          play.id === otherPlayer.id
+            ? { ...play, isWaiting: true, room: null }
+            : play
+        );
+        io.sockets.sockets.get(otherPlayer.id).leave(playerInfo.room);
+        io.sockets.sockets
+          .get(otherPlayer.id)
+          .emit(
             "message",
             "Your opponent disconnected. Waiting for a new player..."
           );
-
-          // Set the remaining player as the waiting player
-          waitingPlayer = {
-            id: otherPlayer.id,
-            playerData: otherPlayer.playerData,
-            socket: otherPlayer.socket,
-          };
-
-          // Remove room from activeRooms
-          delete activeRooms[roomName];
-          break;
-        }
       }
+
+      setTimeout(() => {
+        io.sockets.sockets
+          .get(otherPlayer.id)
+          .emit("start-new-game", otherPlayer);
+      }, 2000);
     }
+    players = players.filter((item) => item.id !== socket.id);
   });
 });
 
