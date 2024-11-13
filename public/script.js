@@ -35,6 +35,10 @@ let player = document.querySelector(".player");
 
 let currentPlay = document.querySelector(".current-play");
 
+let onlineUserContainer = document.querySelector(".online-users");
+
+let onlineUsers = [];
+
 const createNewArr = () => {
   let arr = [...Array.from({ length: 25 })].map((_, index) => ({
     value: index + 1,
@@ -106,6 +110,7 @@ const clearBoard = () => {
   gameBox.innerHTML = "";
 };
 
+let boardBtnDisabled = false;
 const showArr = (numArr) => {
   clearBoard();
   numArr.forEach((item, index) => {
@@ -249,6 +254,7 @@ socket.on("update-board", (number, game) => {
     x.value === number ? { ...x, isSelected: true } : { ...x }
   );
   currentGame = game;
+  boardBtnDisabled = false;
   showArr(numberArr);
   showWhosTurn();
   checkPossibles(numberArr);
@@ -270,8 +276,46 @@ socket.on("calculate", (numberArr) => {
   checkPossibles(numberArr);
 });
 
-socket.on("show-all-players", (data) => {
-  console.log("all playerss", data);
+socket.on("online-users", (data) => {
+  if (Object.values(playerData).length > 0) {
+    onlineUserContainer.classList.add("hidden");
+    return;
+  }
+  onlineUserContainer.classList.remove("hidden");
+  let h1tag = document.createElement("h1");
+  h1tag.textContent = "Online Users:";
+  onlineUserContainer.innerHTML = "";
+  onlineUserContainer.appendChild(h1tag);
+  if (data && data.length > 0) {
+    data.forEach((user) => {
+      const userDiv = document.createElement("div");
+      userDiv.classList.add("user-container");
+
+      const nameElement = document.createElement("h1");
+      nameElement.classList.add("user-name");
+      nameElement.textContent = user.name || "Unnamed Player";
+
+      const info = document.createElement("p");
+      info.style.fontSize = "1rem";
+      info.textContent = user.room ? "Playing..." : "Waiting...";
+
+      const playButton = document.createElement("button");
+      playButton.classList.add("user-btn");
+      playButton.textContent = "Play";
+      //   //  Add an event listener to the button to handle "Play" requests
+      //   playButton.addEventListener("click", () => {
+      //     // Trigger an event to the server to start a game with this user
+      //     socket.emit("invite-player", user.id);
+      //   });
+      // Append elements to the container for this user
+      userDiv.append(nameElement, info);
+      onlineUserContainer.appendChild(userDiv);
+    });
+  } else {
+    let messageTag = document.createElement("p");
+    messageTag.textContent = "No users online";
+    onlineUserContainer.appendChild(messageTag);
+  }
 });
 
 //handle disconnects

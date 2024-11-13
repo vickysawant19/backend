@@ -16,6 +16,90 @@ body {
     padding-top: 20px;
 }
 
+
+/* Styles for start menu */
+.player-box {
+    color: white;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    align-items: center;
+    padding: 20px;
+    width: 100%;
+    margin: 10px auto;
+    max-width: 400px;
+}
+
+.player-box input {
+   width: 100%;
+    border-radius: 5px;
+    padding: 10px;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+}
+
+.player-box button {
+    border: none;
+    outline: none;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 10px 15px;
+    background-color: green;
+    color: white;
+    border-radius: 5px;
+}
+
+
+/* Styles for online users menu on start */
+
+.online-users {
+    width: 100%;
+    height: 200px;
+    margin-top: 10px;
+    max-width: 400px;
+    margin: 20px auto;
+}
+.online-users h1{
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.user-container { 
+    /* border: 1px solid blue; */
+    background-color: darkslateblue;
+    padding: 20px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.user-container h1{
+    font-size: 1.3rem;
+}
+
+.user-container button  {
+    padding: 10px 20px;
+    border: none;
+    outline: none;
+    border-radius: 10px;
+    cursor: pointer;
+    background-color: beige;
+    color: black;
+    font-size: 1rem;
+}
+
+.user-container button:hover{
+    opacity: 90%;
+
+}
+
+
+/* styles for game menu */
+
+
 .game-container {
     font-size: 1rem;
     color: white;
@@ -59,48 +143,6 @@ body {
 
 
 
-.player-box {
-    color: white;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    align-items: center;
-    padding: 20px;
-    width: 100%;
-}
-
-.message-box {
-    background-color: #212121;
-    color: white;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    position: absolute;
-    inset: 0;
-}
-
-.player-box input {
-    border-radius: 5px;
-    padding: 5px;
-    border: none;
-    outline: none;
-    font-size: 1rem;
-}
-
-
-
-.player-box button {
-    border: none;
-    outline: none;
-    cursor: pointer;
-    font-size: 1rem;
-    padding: 5px 13px;
-    background-color: green;
-    color: white;
-    border-radius: 5px;
-}
 
 .current-play {
     display: flex;
@@ -117,9 +159,7 @@ body {
     padding: 10px;
 }
 
-.hidden {
-    display: none;
-}
+
 
 .btn {
     outline: none;
@@ -144,9 +184,23 @@ body {
     
 }
 
-.timer { 
-    font-size: 1.3rem;
-    font-weight: bold;
+
+
+
+.message-box {
+    background-color: #212121;
+    color: white;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    position: absolute;
+    inset: 0;
+}
+
+.hidden {
+    display: none;
 }
 
 .animate {

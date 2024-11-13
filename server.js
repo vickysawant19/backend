@@ -27,6 +27,9 @@ let players = [];
 
 io.on("connection", (socket) => {
   console.log(socket.id + " is connected!");
+  //send online users data
+  io.emit("online-users", players);
+
   socket.on("start-new-game", (playerData) => {
     playerData = {
       ...playerData,
@@ -58,6 +61,8 @@ io.on("connection", (socket) => {
         "message",
         `${waitingPlayerData.name} with ${playerData.name}`
       );
+      //send online users data
+      io.emit("online-users", players);
 
       setTimeout(() => {
         io.to(roomName).emit("game-start", {
@@ -71,12 +76,10 @@ io.on("connection", (socket) => {
       players = players.map((player) =>
         player.id === socket.id ? { ...player, isWaiting: true } : player
       );
+      //send online users data
+      io.emit("online-users", players);
       socket.emit("message", "Waiting for another player...");
     }
-  });
-  //send all players details to client-side
-  socket.on("show-all-players", () => {
-    socket.emit("show-all-players", players);
   });
 
   //update other player data
@@ -101,8 +104,11 @@ io.on("connection", (socket) => {
     }
     //update players room
     players = players.map((player) =>
-      player.room === room ? { ...player, room: null } : player
+      player.room === room
+        ? { ...player, room: null, isWaiting: false }
+        : player
     );
+    io.emit("online-users", players);
   });
 
   // Handle player disconnection
@@ -127,15 +133,16 @@ io.on("connection", (socket) => {
             "message",
             "Your opponent disconnected. Waiting for a new player..."
           );
+        setTimeout(() => {
+          io.sockets.sockets
+            .get(otherPlayer.id)
+            .emit("start-new-game", otherPlayer);
+        }, 2000);
       }
-
-      setTimeout(() => {
-        io.sockets.sockets
-          .get(otherPlayer.id)
-          .emit("start-new-game", otherPlayer);
-      }, 2000);
     }
     players = players.filter((item) => item.id !== socket.id);
+    //send online users data
+    io.emit("online-users", players);
   });
 });
 
