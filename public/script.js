@@ -62,8 +62,10 @@ const showWhosTurn = () => {
   }
   let myTurn = currentGame.currentPlayer.id === playerData.id;
   if (myTurn) {
+    // showTimer(10);
     player.classList.add("animate");
   } else {
+    // hideTimer();
     player.classList.remove("animate");
   }
 };
@@ -153,18 +155,24 @@ const startNewGame = () => {
   checkPossibles(numberArr);
 };
 
-startBtn.addEventListener("click", () => {
-  if (playerName.value !== "") {
-    playerBox.classList.add("hidden");
-    playerData = {
-      //   id: 0,
-      name: playerName.value || "vicky",
-      score: 0,
-    };
-    // socket.emit("player-name", playerData);
-    socket.emit("start-new-game", playerData);
-  }
-});
+const getPlayerData = () => {
+  gameContainer.classList.add("hidden");
+  playerBox.classList.remove("hidden");
+
+  startBtn.addEventListener("click", () => {
+    if (playerName.value !== "") {
+      playerBox.classList.add("hidden");
+      playerData = {
+        //   id: 0,
+        name: playerName.value || "vicky",
+        score: 0,
+      };
+      socket.emit("start-new-game", playerData);
+    }
+  });
+};
+
+getPlayerData();
 
 //get updated Player Data from server
 socket.on("player-data", (data) => {
@@ -181,7 +189,6 @@ socket.on("start-new-game", (data) => {
 socket.on("game-start", (data) => {
   let messageBox = document.querySelector(".message-box");
   messageBox.classList.add("hidden");
-
   isGameEnd = false;
   currentGame = data;
   gameContainer.classList.remove("hidden");
@@ -207,7 +214,6 @@ socket.on("winner", (gameData) => {
   let winnerData =
     gameData.player1.score >= 5 ? gameData.player1 : gameData.player2;
   //show winner details
-
   let p = document.createElement("p");
   if (!message) {
     if (winnerData.id === playerData.id) {
@@ -246,19 +252,18 @@ socket.on("update-board", (number, game) => {
   showArr(numberArr);
   showWhosTurn();
   checkPossibles(numberArr);
-
   socket.emit("update-game-data", currentGame);
+});
+
+socket.on("update-game-data", (data) => {
+  currentGame = data;
+  showStat();
   let score1 = currentGame.player1.score;
   let score2 = currentGame.player2.score;
   if (score1 >= 5 || score2 >= 5) {
     isGameEnd = true;
     socket.emit("winner", currentGame);
   }
-});
-
-socket.on("update-game-data", (data) => {
-  currentGame = data;
-  showStat();
 });
 
 socket.on("calculate", (numberArr) => {

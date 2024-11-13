@@ -144,6 +144,11 @@ body {
     
 }
 
+.timer { 
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
 .animate {
     animation: scales 0.6s linear infinite alternate; /* Repeat animation infinitely */
 }

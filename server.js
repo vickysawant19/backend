@@ -34,7 +34,7 @@ io.on("connection", (socket) => {
       isWaiting: false,
       room: null,
     };
-    socket.emit("player-data", playerData);
+    socket.emit("player-data", playerData); //update player data with socket id on client
     let alredyPresent = players.find((item) => item.id === socket.id);
     if (!alredyPresent) {
       players.push(playerData);
@@ -42,7 +42,7 @@ io.on("connection", (socket) => {
 
     let waitingPlayerData = players.find(
       (player) => player.id !== socket.id && player.isWaiting
-    );
+    ); //get first waiting player
 
     if (waitingPlayerData) {
       const roomName = `room-${waitingPlayerData.id}-${socket.id}`;
@@ -71,19 +71,15 @@ io.on("connection", (socket) => {
       players = players.map((player) =>
         player.id === socket.id ? { ...player, isWaiting: true } : player
       );
-
       socket.emit("message", "Waiting for another player...");
     }
   });
-
+  //send all players details to client-side
   socket.on("show-all-players", () => {
     socket.emit("show-all-players", players);
   });
 
-  socket.on("update", (num, game) => {
-    io.to(game.room).emit("update", num, game);
-  });
-
+  //update other player data
   socket.on("update-other-player", (number, game, data) => {
     io.to(data.id).emit("update-board", number, game);
   });
@@ -99,7 +95,7 @@ io.on("connection", (socket) => {
     let otherPlayer = players.find(
       (player) => player.room === room && player.id !== socket.id
     );
-    console.log("otherPlayer", otherPlayer);
+
     if (otherPlayer) {
       io.sockets.sockets.get(otherPlayer.id).leave(room);
     }
