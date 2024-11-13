@@ -111,6 +111,12 @@ io.on("connection", (socket) => {
     io.emit("online-users", players);
   });
 
+  //handle message
+  socket.on("send-message", (msg, senderId, room) => {
+    console.log("message reciverd ", msg, senderId, room);
+    io.to(room).emit("received-message", msg, senderId);
+  });
+
   // Handle player disconnection
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
@@ -136,7 +142,7 @@ io.on("connection", (socket) => {
         setTimeout(() => {
           io.sockets.sockets
             .get(otherPlayer.id)
-            .emit("start-new-game", otherPlayer);
+            ?.emit("start-new-game", otherPlayer);
         }, 2000);
       }
     }

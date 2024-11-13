@@ -37,6 +37,44 @@ let currentPlay = document.querySelector(".current-play");
 
 let onlineUserContainer = document.querySelector(".online-users");
 
+let chatBox = document.querySelector(".chat-box");
+let chatCloseBtn = document.querySelector(".close-btn");
+
+let allChat = document.querySelector(".all-chat");
+let chatMessage = document.querySelector("#chat-message");
+let chatSendBtn = document.querySelector(".chat-send-btn");
+
+chatBox.classList.add("hidden");
+
+chatCloseBtn.addEventListener("click", () => {
+  chatBox.classList.toggle("close-chat");
+  chatCloseBtn.textContent = chatBox.classList.contains("close-chat")
+    ? "Chat"
+    : "Close Chat ❌";
+});
+
+chatSendBtn.addEventListener("click", () => {
+  let msg = chatMessage.value;
+  console.log("client-message send", msg);
+  if (msg !== "") {
+    chatMessage.value = "";
+    let senderId = playerData.id;
+    socket.emit("send-message", msg, senderId, currentGame.room);
+  }
+});
+
+socket.on("received-message", (msg, senderId) => {
+  chatBox.classList.remove("close-chat");
+  chatCloseBtn.textContent = "Close Chat ❌";
+  let div = document.createElement("div");
+  div.classList.add("message");
+  let classname = senderId === playerData.id ? "sent" : "received";
+  div.classList.add(classname);
+  div.textContent = msg;
+  allChat.appendChild(div);
+  allChat.scrollTop = allChat.scrollHeight;
+});
+
 let onlineUsers = [];
 
 const createNewArr = () => {
@@ -182,7 +220,6 @@ getPlayerData();
 //get updated Player Data from server
 socket.on("player-data", (data) => {
   playerData = data;
-  socket.emit("show-all-players", "");
 });
 
 //start new game request from server
@@ -197,6 +234,7 @@ socket.on("game-start", (data) => {
   isGameEnd = false;
   currentGame = data;
   gameContainer.classList.remove("hidden");
+  chatBox.classList.remove("hidden");
   startNewGame();
 });
 
