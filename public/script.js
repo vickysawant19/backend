@@ -55,7 +55,6 @@ chatCloseBtn.addEventListener("click", () => {
 
 chatSendBtn.addEventListener("click", () => {
   let msg = chatMessage.value;
-  console.log("client-message send", msg);
   if (msg !== "") {
     chatMessage.value = "";
     let senderId = playerData.id;

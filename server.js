@@ -113,7 +113,6 @@ io.on("connection", (socket) => {
 
   //handle message
   socket.on("send-message", (msg, senderId, room) => {
-    console.log("message reciverd ", msg, senderId, room);
     io.to(room).emit("received-message", msg, senderId);
   });
 
