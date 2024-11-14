@@ -51,6 +51,18 @@ chatCloseBtn.addEventListener("click", () => {
   chatCloseBtn.textContent = chatBox.classList.contains("close-chat")
     ? "Chat"
     : "Close ❌";
+  chatBox.classList.contains("close-chat") ? "" : chatMessage.focus();
+});
+chatMessage.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    let msg = chatMessage.value;
+    if (msg !== "") {
+      chatMessage.value = "";
+      let senderId = playerData.id;
+      socket.emit("send-message", msg, senderId, currentGame.room);
+    }
+    chatMessage.focus();
+  }
 });
 
 chatSendBtn.addEventListener("click", () => {
@@ -60,6 +72,7 @@ chatSendBtn.addEventListener("click", () => {
     let senderId = playerData.id;
     socket.emit("send-message", msg, senderId, currentGame.room);
   }
+  chatMessage.focus();
 });
 
 socket.on("received-message", (msg, senderId) => {
@@ -72,6 +85,7 @@ socket.on("received-message", (msg, senderId) => {
   div.textContent = msg;
   allChat.appendChild(div);
   allChat.scrollTop = allChat.scrollHeight;
+  chatMessage.focus();
 });
 
 const createNewArr = () => {
@@ -188,6 +202,7 @@ const startNewGame = () => {
 const getPlayerData = () => {
   gameContainer.classList.add("hidden");
   playerBox.classList.remove("hidden");
+  playerName.focus();
   startBtn.addEventListener("click", () => {
     if (playerName.value !== "") {
       playerBox.classList.add("hidden");
