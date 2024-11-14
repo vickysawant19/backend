@@ -62,7 +62,6 @@ chatMessage.addEventListener("keydown", (e) => {
       let senderId = playerData.id;
       socket.emit("send-message", msg, senderId, currentGame.room);
     }
-    chatMessage.focus();
   }
 });
 
@@ -84,8 +83,8 @@ socket.on("received-message", (msg, senderId) => {
   div.classList.add(classname);
   div.textContent = msg;
   allChat.appendChild(div);
-  chatMessage.focus();
   allChat.scrollTop = allChat.scrollHeight;
+  chatMessage.focus();
 });
 
 const createNewArr = () => {

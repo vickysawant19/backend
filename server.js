@@ -6,7 +6,9 @@ import { Server } from "socket.io";
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, {
+  // cors: [],
+});
 
 const PORT = process.env.PORT || 3000;
 const _filename = fileURLToPath(import.meta.url);
