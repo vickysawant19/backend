@@ -53,6 +53,7 @@ chatCloseBtn.addEventListener("click", () => {
     : "Close ❌";
   chatBox.classList.contains("close-chat") ? "" : chatMessage.focus();
 });
+
 chatMessage.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     let msg = chatMessage.value;
@@ -72,7 +73,6 @@ chatSendBtn.addEventListener("click", () => {
     let senderId = playerData.id;
     socket.emit("send-message", msg, senderId, currentGame.room);
   }
-  chatMessage.focus();
 });
 
 socket.on("received-message", (msg, senderId) => {
@@ -84,8 +84,8 @@ socket.on("received-message", (msg, senderId) => {
   div.classList.add(classname);
   div.textContent = msg;
   allChat.appendChild(div);
-  allChat.scrollTop = allChat.scrollHeight;
   chatMessage.focus();
+  allChat.scrollTop = allChat.scrollHeight;
 });
 
 const createNewArr = () => {
