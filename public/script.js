@@ -66,7 +66,8 @@ chatMessage.addEventListener("keydown", (e) => {
   }
 });
 
-chatSendBtn.addEventListener("click", () => {
+chatSendBtn.addEventListener("click", (e) => {
+  e.preventDefault();
   let msg = chatMessage.value;
   if (msg !== "") {
     chatMessage.value = "";
