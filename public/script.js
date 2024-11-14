@@ -1,5 +1,5 @@
-const socket = io("https://bingo-vs.up.railway.app");
-// const socket = io("http://localhost:3000");
+// const socket = io("https://bingo-vs.up.railway.app");
+const socket = io("http://localhost:3000");
 
 socket.on("connect", () => {
   console.log("Connected to server");
@@ -33,8 +33,9 @@ let startBtn = document.querySelector(".start-btn");
 let gameContainer = document.querySelector(".game-container");
 let gameBox = document.querySelector(".game-box");
 let player = document.querySelector(".player");
-
 let currentPlay = document.querySelector(".current-play");
+
+let block = document.querySelector(".block");
 
 let onlineUserContainer = document.querySelector(".online-users");
 
@@ -145,6 +146,7 @@ const showArr = (numArr) => {
     ) {
       btn.style.cursor = "pointer";
       btn.addEventListener("click", () => {
+        block.classList.remove("hidden");
         currentGame.player1.id === currentGame.currentPlayer.id
           ? (currentGame.currentPlayer = currentGame.player2)
           : (currentGame.currentPlayer = currentGame.player1);
@@ -156,6 +158,7 @@ const showArr = (numArr) => {
           currentGame.player1.id === playerData.id
             ? currentGame.player2
             : currentGame.player1;
+
         socket.emit(
           "update-other-player",
           item.value,
@@ -211,10 +214,17 @@ socket.on("start-new-game", (data) => {
 
 //start-game request if found new user after waiting
 socket.on("game-start", (data) => {
+  currentGame = data;
+  let myTurn = currentGame.currentPlayer.id === playerData.id;
+  if (!myTurn) {
+    block.classList.remove("hidden");
+  } else {
+    block.classList.add("hidden");
+  }
+
   let messageBox = document.querySelector(".message-box");
   messageBox.classList.add("hidden");
   isGameEnd = false;
-  currentGame = data;
   gameContainer.classList.remove("hidden");
   chatBox.classList.remove("hidden");
   startNewGame();
@@ -254,6 +264,7 @@ socket.on("winner", (gameData) => {
   let newGame = document.createElement("button");
   newGame.classList.add("btn");
   newGame.textContent = "Play New Game";
+  block.classList.add("hidden");
 
   newGame.addEventListener("click", () => {
     socket.emit("start-new-game", { ...playerData, score: 0 });
@@ -281,11 +292,18 @@ socket.on("update-board", (number, game) => {
 
 socket.on("update-game-data", (data) => {
   currentGame = data;
+  let myTurn = currentGame.currentPlayer.id === playerData.id;
+  if (!myTurn) {
+    block.classList.remove("hidden");
+  } else {
+    block.classList.add("hidden");
+  }
   showStat();
   let score1 = currentGame.player1.score;
   let score2 = currentGame.player2.score;
   if (score1 >= 5 || score2 >= 5) {
     isGameEnd = true;
+    block.classList.remove("hidden");
     socket.emit("winner", currentGame);
   }
 });

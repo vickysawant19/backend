@@ -71,7 +71,7 @@ io.on("connection", (socket) => {
           room: roomName,
           currentPlayer: playerData,
         });
-      }, 2000);
+      }, 1000);
     } else {
       players = players.map((player) =>
         player.id === socket.id ? { ...player, isWaiting: true } : player
