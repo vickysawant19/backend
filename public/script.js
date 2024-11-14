@@ -61,6 +61,7 @@ chatMessage.addEventListener("keydown", (e) => {
       chatMessage.value = "";
       let senderId = playerData.id;
       socket.emit("send-message", msg, senderId, currentGame.room);
+      chatMessage.focus();
     }
   }
 });
@@ -71,6 +72,7 @@ chatSendBtn.addEventListener("click", () => {
     chatMessage.value = "";
     let senderId = playerData.id;
     socket.emit("send-message", msg, senderId, currentGame.room);
+    chatMessage.focus();
   }
 });
 
