@@ -83,8 +83,8 @@ io.on("connection", (socket) => {
   });
 
   //update other player data
-  socket.on("update-other-player", (number, game, data) => {
-    io.to(data.id).emit("update-board", number, game);
+  socket.on("update-other-player", (number, game, data, boardBtnDisabled) => {
+    io.to(data.id).emit("update-board", number, game, boardBtnDisabled);
   });
 
   socket.on("update-game-data", (data) => {

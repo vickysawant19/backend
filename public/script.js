@@ -23,6 +23,7 @@ const bingoPairs = [
 let numberArr = [];
 let playerData = {};
 let currentGame = {};
+let onlineUsers = [];
 let isGameEnd = false;
 
 let playerBox = document.querySelector(".player-box");
@@ -44,13 +45,11 @@ let allChat = document.querySelector(".all-chat");
 let chatMessage = document.querySelector("#chat-message");
 let chatSendBtn = document.querySelector(".chat-send-btn");
 
-chatBox.classList.add("hidden");
-
 chatCloseBtn.addEventListener("click", () => {
   chatBox.classList.toggle("close-chat");
   chatCloseBtn.textContent = chatBox.classList.contains("close-chat")
     ? "Chat"
-    : "Close Chat ❌";
+    : "Close ❌";
 });
 
 chatSendBtn.addEventListener("click", () => {
@@ -64,7 +63,7 @@ chatSendBtn.addEventListener("click", () => {
 
 socket.on("received-message", (msg, senderId) => {
   chatBox.classList.remove("close-chat");
-  chatCloseBtn.textContent = "Close Chat ❌";
+  chatCloseBtn.textContent = "Close ❌";
   let div = document.createElement("div");
   div.classList.add("message");
   let classname = senderId === playerData.id ? "sent" : "received";
@@ -74,14 +73,11 @@ socket.on("received-message", (msg, senderId) => {
   allChat.scrollTop = allChat.scrollHeight;
 });
 
-let onlineUsers = [];
-
 const createNewArr = () => {
   let arr = [...Array.from({ length: 25 })].map((_, index) => ({
     value: index + 1,
     isSelected: false,
   }));
-
   return arr
     .map((item) => ({ ...item, sort: Math.random() }))
     .sort((a, b) => a.sort - b.sort)
@@ -89,47 +85,34 @@ const createNewArr = () => {
 };
 
 const showWhosTurn = () => {
-  let isPlayer1 = currentGame.player1.id === playerData.id;
-  if (isPlayer1) {
-    player.textContent =
-      currentGame.currentPlayer.id === playerData.id
-        ? "Your turn"
-        : `${currentGame.player2.name} turn!`;
-  } else {
-    player.textContent =
-      currentGame.currentPlayer.id === playerData.id
-        ? "Your turn"
-        : `${currentGame.player1.name} turn!`;
-  }
   let myTurn = currentGame.currentPlayer.id === playerData.id;
   if (myTurn) {
-    // showTimer(10);
+    player.textContent = "Your turn";
     player.classList.add("animate");
   } else {
-    // hideTimer();
+    player.textContent =
+      currentGame.player1.id === playerData.id
+        ? `${currentGame.player2.name} turn!`
+        : `${currentGame.player1.name} turn!`;
     player.classList.remove("animate");
   }
 };
 
-const showStat = () => {
-  // show whoes turn
-  showWhosTurn();
-  currentPlay.innerHTML = "";
-  let player1 = document.createElement("div");
-  let player2 = document.createElement("div");
-  player1.innerHTML = `<ul>
+const createStats = (name, score) => {
+  let player = document.createElement("div");
+  player.innerHTML = `<ul>
   <p style="padding-bottom: 10px;">Player 1:</p>
-  <li style="font-size: 1rem;">${currentGame.player1.name}</li>
-  <li style="font-size: 1.8rem;">${currentGame.player1.score}</li>
+  <li style="font-size: 1rem;">${name}</li>
+  <li style="font-size: 1.8rem;">${score}</li>
 </ul>`;
+  return player;
+};
 
-  player2.innerHTML = `<ul>
-  <p style="padding-bottom: 10px;">Player 2:</p> <!-- Corrected closing tag -->
-  <li style="font-size: 1rem;">${currentGame.player2.name}</li>
-  <li style="font-size: 1.8rem;">${currentGame.player2.score}</li>
-</ul>`;
-
-  currentPlay.append(player1, player2);
+const showStat = () => {
+  currentPlay.innerHTML = "";
+  let elm1 = createStats(currentGame.player1.name, currentGame.player1.score);
+  let elm2 = createStats(currentGame.player2.name, currentGame.player2.score);
+  currentPlay.append(elm1, elm2);
 };
 
 const checkPossibles = (arr) => {
@@ -139,15 +122,12 @@ const checkPossibles = (arr) => {
   currentGame.player1.id === playerData.id
     ? (currentGame.player1.score = result.length)
     : (currentGame.player2.score = result.length);
-
-  showStat();
 };
 
 const clearBoard = () => {
   gameBox.innerHTML = "";
 };
 
-let boardBtnDisabled = false;
 const showArr = (numArr) => {
   clearBoard();
   numArr.forEach((item, index) => {
@@ -155,21 +135,23 @@ const showArr = (numArr) => {
     btn.textContent = item.value;
     btn.classList.add("number-btn");
     btn.style.cursor = "auto";
-    if (currentGame?.currentPlayer.id === playerData.id && !isGameEnd) {
+    btn.disabled =
+      !currentGame?.currentPlayer.id === playerData.id || item.isSelected;
+    btn.style.backgroundColor = item.isSelected ? "#D7003A" : "#0A9D58";
+    if (
+      !item.isSelected &&
+      currentGame?.currentPlayer.id === playerData.id &&
+      !isGameEnd
+    ) {
       btn.style.cursor = "pointer";
       btn.addEventListener("click", () => {
         currentGame.player1.id === currentGame.currentPlayer.id
           ? (currentGame.currentPlayer = currentGame.player2)
           : (currentGame.currentPlayer = currentGame.player1);
-
         numberArr = numberArr.map((x) =>
           x.value === item.value ? { ...x, isSelected: true } : { ...x }
         );
-
-        checkPossibles(numberArr);
-        showArr(numberArr);
-        showWhosTurn();
-
+        updateUI(numberArr);
         let otherPlayer =
           currentGame.player1.id === playerData.id
             ? currentGame.player2
@@ -182,30 +164,31 @@ const showArr = (numArr) => {
         );
       });
     }
-    btn.disabled = !currentGame?.currentPlayer.id === playerData.id;
-    btn.style.backgroundColor = item.isSelected ? "#D7003A" : "#0A9D58";
+
     gameBox.appendChild(btn);
   });
 };
 
+const updateUI = (numberArr) => {
+  showStat();
+  showWhosTurn();
+  showArr(numberArr);
+  checkPossibles(numberArr);
+};
+
 const startNewGame = () => {
   isGameEnd = false;
-  clearBoard();
   numberArr = createNewArr();
-  showArr(numberArr);
-  showStat();
-  checkPossibles(numberArr);
+  updateUI(numberArr);
 };
 
 const getPlayerData = () => {
   gameContainer.classList.add("hidden");
   playerBox.classList.remove("hidden");
-
   startBtn.addEventListener("click", () => {
     if (playerName.value !== "") {
       playerBox.classList.add("hidden");
       playerData = {
-        //   id: 0,
         name: playerName.value || "vicky",
         score: 0,
       };
@@ -241,8 +224,8 @@ socket.on("game-start", (data) => {
 socket.on("winner", (gameData) => {
   currentGame = gameData;
   isGameEnd = true;
-  showArr(numberArr);
-  showStat();
+  updateUI(numberArr);
+  chatBox.classList.add("hidden");
   player.classList.remove("animate");
   player.innerHTML = "";
 
@@ -281,6 +264,7 @@ socket.on("winner", (gameData) => {
 //show message came from server
 socket.on("message", (data) => {
   gameContainer.classList.add("hidden");
+  chatBox.classList.add("hidden");
   let messageBox = document.querySelector(".message-box");
   messageBox.classList.remove("hidden");
   messageBox.textContent = data;
@@ -291,10 +275,7 @@ socket.on("update-board", (number, game) => {
     x.value === number ? { ...x, isSelected: true } : { ...x }
   );
   currentGame = game;
-  boardBtnDisabled = false;
-  showArr(numberArr);
-  showWhosTurn();
-  checkPossibles(numberArr);
+  updateUI(numberArr);
   socket.emit("update-game-data", currentGame);
 });
 
@@ -309,10 +290,7 @@ socket.on("update-game-data", (data) => {
   }
 });
 
-socket.on("calculate", (numberArr) => {
-  checkPossibles(numberArr);
-});
-
+// show online users
 socket.on("online-users", (data) => {
   if (Object.values(playerData).length > 0) {
     onlineUserContainer.classList.add("hidden");
@@ -320,36 +298,25 @@ socket.on("online-users", (data) => {
   }
   onlineUserContainer.classList.remove("hidden");
   let h1tag = document.createElement("h1");
-  h1tag.textContent = "Online Users:";
+  h1tag.textContent = `Online Users: (${data.length})`;
   onlineUserContainer.innerHTML = "";
   onlineUserContainer.appendChild(h1tag);
   if (data && data.length > 0) {
     data.forEach((user) => {
       const userDiv = document.createElement("div");
       userDiv.classList.add("user-container");
-
       const nameElement = document.createElement("h1");
       nameElement.classList.add("user-name");
       nameElement.textContent = user.name || "Unnamed Player";
-
       const info = document.createElement("p");
       info.style.fontSize = "1rem";
       info.textContent = user.room ? "Playing..." : "Waiting...";
-
-      const playButton = document.createElement("button");
-      playButton.classList.add("user-btn");
-      playButton.textContent = "Play";
-      //   //  Add an event listener to the button to handle "Play" requests
-      //   playButton.addEventListener("click", () => {
-      //     // Trigger an event to the server to start a game with this user
-      //     socket.emit("invite-player", user.id);
-      //   });
-      // Append elements to the container for this user
       userDiv.append(nameElement, info);
       onlineUserContainer.appendChild(userDiv);
     });
   } else {
     let messageTag = document.createElement("p");
+    messageTag.style.marginTop = "10px";
     messageTag.textContent = "No users online";
     onlineUserContainer.appendChild(messageTag);
   }
